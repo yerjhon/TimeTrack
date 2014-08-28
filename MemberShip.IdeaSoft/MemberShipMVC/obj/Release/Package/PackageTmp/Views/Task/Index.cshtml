@@ -1,0 +1,360 @@
+﻿@model IEnumerable<MemberShipMVC.Models.Task>
+
+@{
+    ViewBag.Title = "Index";
+    var Today = DateTime.Today;
+    int intDay = ((int)Today.DayOfWeek - 1) * (-1);
+    int intDayEnd = -intDay <= 5 ? 5 + intDay - 1 : intDay + 5 - 1;  
+    DateTime dtmFirstDay = Today.AddDays(intDay);
+    DateTime dtmEndDay = Today.AddDays(intDayEnd);
+    //var FirstMonthDay = new DateTime(Today.Year, Today.Month, 1);
+    //var LastMonthDay = new DateTime(Today.Year, Today.Month, DateTime.DaysInMonth(Today.Year, Today.Month));
+    var BeforeDayWeek = ((int)DateTime.Now.DayOfWeek) <= 5 && (int)DateTime.Now.DayOfWeek != 0 ? (((int)DateTime.Now.DayOfWeek) - 1) * (-1) - 7 : ((int)DateTime.Now.DayOfWeek) == 6 ? -12 : -13;
+    var AfterDayWeek = ((int)DateTime.Now.DayOfWeek) <= 5 && (int)DateTime.Now.DayOfWeek != 0 ? (((int)DateTime.Now.DayOfWeek) - 5) * (-1) : 0;
+}
+
+<style>
+   .myAltRowClass {
+        background-color: red;
+        background-image: none;
+   }
+</style>
+
+<link href="~/Content/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+<link href="~/Content/jquery-ui.css" rel="stylesheet" />
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.8.24.min.js"></script>
+
+<h2>IDEASOFT</h2>
+<h3>Time Track</h3>
+<h4>Current Period: [@dtmFirstDay.ToString("yyyy-MM-dd") - @dtmEndDay.ToString("yyyy-MM-dd")]</h4>
+<br />
+<div style="background-color:brown; width:20px; height:20px; position:absolute"></div><span style="margin-left:25px;">Tasks submitted. (You can not edit)</span> 
+<br />
+<div style="background-color:#C2D5E1; width:20px; height:20px; position:absolute"></div><span style="margin-left:25px;">Tasks not submitted. (You can edit)</span>
+<br/><br/>
+
+<table id="listTask"></table>
+
+<div id="pager2"></div>
+<br />
+
+<input type="button" id="addTask" value="Add" />
+
+<div id="SendConfirmation" title="Send these tasks? " hidden="hidden">
+     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;">
+     </span>
+         The tasks for this group will not be able to be edited after being sent.<br /> 
+         Are you sure to send the mail?
+     </p>
+</div>
+
+<div id="DialogMailSend" title="Mail" hidden="hidden">
+    <span>
+        The mail was sent successfully. 
+    </span>
+</div>
+
+<div id="DialogError" title="Error" hidden="hidden">
+    <span>
+        An error has occurred when sending Mail.
+    </span>
+</div>
+
+@{
+    DateTime cellValue = DateTime.Now;
+    var beginweek = DateTime.Now.Date.AddDays((int)DateTime.Now.DayOfWeek * -1);
+    var endweek = beginweek.AddDays(6);
+    var DiaMes = (int)DateTime.Now.Day;
+    var DiaSemana = (int)DateTime.Now.DayOfWeek;
+}
+
+ <script type = "text/javascript">
+     var grid = $("#listTask");
+     var lastsel;
+
+     jQuery("#listTask").jqGrid({
+         url: "/Task/GetTasks",
+         datatype: "json",
+         mtype: 'GET',
+         colNames: ['ID TASK', 'SEND', 'PROJECT', 'DATE', 'TICKET ID', 'DETAILS', 'HOURS', ''],
+         //colNames: ['ID TASK', 'PROJECT', 'DATE', 'TICKET ID', 'DETAILS', 'HOURS', ''],
+         colModel: [
+             { name: 'IdTask', index: 'IdTask', editable: true, sorttype: "text" },
+             { name: 'Send', index: 'Send', editable: true, sorttype: "text" },
+             { name: 'IdProjectUser', index: 'IdProjectUser', editable: true, edittype: "select", editrules: { required: true }, editoptions: { dataUrl: '@Url.Action("GetProject", new { Date = DateTime.Now })' } },
+             {
+                 name: 'Date', index: 'Date', edittype: 'text', editable: true, editrules: { required: true },
+                 editoptions: {
+                     size: 10, maxlengh: 10,
+                     dataInit: function (element) {
+                         $(element).datepicker({
+                             //beforeShowDay:function(day){
+                             //    var day = day.getDay();
+                             //    if (day == 0 || day == 6) {
+                             //        return [false, "somecssclass"]
+                             //    } else {
+                             //        return [true, "someothercssclass"]
+                             //    }
+                             //},
+                             dateFormat: 'yy-mm-dd',
+                             minDate: '@BeforeDayWeek',
+                             maxDate: '@AfterDayWeek'
+                         })
+                     }
+                 }
+             },
+             { name: 'IdTicket', index: 'IdTicket', editable: true, title: "ddd", editoptions: { maxLength: "50" } },
+             { name: 'Detail', index: 'Detail', editable: true, editrules: { required: true }, edittype: "textarea", editoptions: { rows: "12", cols: "50", maxLength:"500" } },
+             {
+                 name: 'Hours', index: 'Hours', editable: true, sorttype: "number", formatter: "number", editrules: { required: true }, editoptions: {
+                     dataInit: function (elem) {
+                         //jQuery(elem).bind("keypress", function (e) { return number(e) })
+                         jQuery(elem).bind("keypress", function (e) { return SoloNumeroDecimal(e, this) })
+                     }}, summaryType: "sum" },
+             {
+                 name: 'myac', width: 80, fixed: true, sortable: false, resize: false, formatter: 'actions', formatoptions:
+                   {
+                       keys: true,
+                       delOptions: {
+                           url: "/Task/Delete",
+                           beforeShowForm: function (form) {
+                               var dlgDiv = $("#delmod" + grid[0].id);
+                               var parentDiv = dlgDiv.parent(); 
+                               var dlgWidth = dlgDiv.width();
+                               var parentWidth = parentDiv.width();
+                               var dlgHeight = dlgDiv.height();
+                               var parentHeight = parentDiv.height();
+                               var position = dlgWidth + parentWidth
+                               dlgDiv[0].style.left = Math.round((position) / 2) + "px";
+                           }
+                       }
+                   }
+             },
+         ],
+         formatter: 'actions',
+         formatoptions: {
+             keys: true,
+             editformbutton: true,
+         },
+         loadonce: true,
+         rowNum: 20,
+         rowList: [10, 20, 30, 40, 50],
+         pager: '#pager2',
+         sortname: 'IdTask',
+         viewrecords: true,
+         height: 'auto',
+         width: '1300',
+         recreateForm : true,
+         top: 5,
+         sortorder: "desc",
+         editurl: "/Task/EditTask",
+         caption: "Tasks",
+         grouping: true,
+         groupingView: {
+             groupField: ['Date'],
+             groupColumnShow: [true],
+             groupText: ['<b> {0} <button rel="{0}" class="btnDayReport" id = "{0}">Send</button> </b>'],
+             groupCollapse: false,
+             groupOrder: ['asc'],
+             groupSummary: [true],
+             showSummaryOnHide: true,
+             groupDataSorted: true
+         },
+         gridComplete: function () {
+             //('#listTask.jqgrow Date').attr("disabled", "disabled")
+             var ids = jQuery("#listTask").jqGrid('getDataIDs');
+             var Date = "";
+
+             for (var i = 0; i < ids.length; i++) {
+                 var Id = ids[i];
+                 var FilaDatos = jQuery('#listTask').jqGrid('getRowData', Id);
+                 var IdButton = "#" + FilaDatos.Date;
+                 if (FilaDatos.Send === "True")
+                 {
+                     if (Date != FilaDatos.Date)
+                     {
+                         jQuery(IdButton).prop("disabled", true);
+                         jQuery(IdButton).css("background-color", "brown");
+                     }
+
+                     jQuery('tr#' + ids[i] + ' td:last div:first div.ui-inline-del', jQuery(this)).hide();
+                     jQuery('tr#' + ids[i] + ' td:last div:first div.ui-inline-edit', jQuery(this)).hide();
+                 }
+                 else if (Date != FilaDatos.Date && FilaDatos.Send === "False") {
+                     jQuery(IdButton).css("background-color", "#C2D5E1");
+                 }
+                 Date = FilaDatos.Date;
+             }
+         }
+     });
+
+    jQuery("#listTask").hideCol("IdTask");
+    jQuery("#listTask").hideCol("Send");
+    //jQuery("#listTask").jqGrid('navGrid', '#pager2', { edit: false, add: false, del: false, reloadAfterSubmit: true }, { reloadAfterSubmit: true }, {}, { url: "/Task/Delete" });
+
+    jQuery("#listTask").jqGrid('navGrid', '#pager2', { edit: false, add: false, del: false, rel: true }, {}, {}, { url: "/Task/Delete" });
+    jQuery("#addTask").click(function () {
+
+        var selRowData, rowid = jQuery("#listTask").jqGrid('getGridParam', 'selrow');
+
+        jQuery("#listTask").jqGrid('editGridRow', "new", {
+             height: 430, width: 400, reloadAfterSubmit: false,
+             beforeShowForm: function (form) {
+
+                 if (rowid != null) {
+                     jQuery("#Date", form).val(jQuery("#listTask").jqGrid('getCell', rowid, 'Date'));
+                     jQuery("#IdProject", form).val(jQuery("#listTask").jqGrid('getCell', rowid, 'IdProject'));
+                     jQuery("#IdTicket", form).focus();
+                 }
+                 else {
+                     jQuery("#Date", form).val("@DateTime.Now.ToString("yyy-MM-dd")");
+                 }
+                 
+                 var dlgDiv = $("#editmod" + grid[0].id);
+                 var parentDiv = dlgDiv.parent(); // div#gbox_list
+                 var dlgWidth = dlgDiv.width();
+                 var parentWidth = parentDiv.width();
+                 var dlgHeight = dlgDiv.height();
+                 var parentHeight = parentDiv.height();
+                                                 
+                 dlgDiv[0].style.left = Math.round((parentWidth)/2) + "px";
+
+             },
+             beforeSubmit: function (postdata, formid) {
+                 var Date = jQuery("#Date").val();
+                 var IdProject = jQuery("#IdProjectUser").val();
+                 var Hours = jQuery("#Hours").val();
+                 var isValid = "";
+                 jQuery.ajax({
+                     url: "@Url.Action("ValidationHoursAndDate","Task")",
+                     async: false,
+                     data: {
+                         "Date": Date,
+                         "IdProject": IdProject,
+                         "Hours": Hours
+                     },
+                     type: "GET",
+                     success: function (data) {
+                         if (data == "") {
+                             isValid = data;
+                         }
+                         else {
+                             isValid = data;
+                         }
+                     }
+                 });
+                 if (isValid == "IsValid") {
+                     return [true, ''];
+                 }
+                 else {
+                     if (isValid == "NotValidDateOfSend") {
+                         return [false, 'The tasks for that date and were sent'];
+                     }
+                     if (isValid == "NoValidHours") {
+                         return [false, 'Quantity of hours not valid for this date'];
+                     }
+                     if (isValid == "") {
+                         return [false, 'Date not valid'];
+                     }
+                 }
+             },
+             afterSubmit: function (response) {
+                 var myInfo = '<div class="ui-state-highlight ui-corner-all">' +
+                              '<span class="ui-icon ui-icon-info" ' +
+                                  'style="float: left; margin-right: .3em;"></span>' +
+                              'New Task added successfully!'
+                              '</div>',
+                 $infoTr = $("#TblGrid_" + $.jgrid.jqID(this.id) + ">tbody>tr.tinfo"),
+                 $infoTd = $infoTr.children("td.topinfo");
+                 $infoTd.html(myInfo);
+                 $infoTr.show();
+                 setTimeout(function () {
+                     $infoTr.slideUp("slow");
+                     jQuery("#listTask").jqGrid('setGridParam', { url: "/Task/GetTasks", datatype: "json", page: 1 }).trigger("reloadGrid");
+                 }, 4000);
+                 return [true, "", ""];
+
+             }
+         });
+     });
+     
+     //function number(e) {
+     //    tecla = (document.all) ? e.keyCode : e.which;
+     //    if (tecla == 8) return true;
+     //    patron = /\d/;
+     //    te = String.fromCharCode(tecla);
+     //    return patron.test(te);
+     //}
+
+     function SoloNumeroDecimal(e, field) {
+         key = e.keyCode ? e.keyCode : e.which 
+         if (key == 8) {
+             return true;
+         }
+         if (field.value != "") { 
+             if ((field.value.indexOf(".")) > 0) { 
+                 if (key > 47 && key < 58) { 
+                     if (field.value == "")
+                         return true 
+                     regexp = /[0-9]{2}$/ 
+                     return !(regexp.test(field.value)) 
+                 } 
+             }
+         } 
+         if (key > 47 && key < 58) { 
+             if (field.value == "") return true 
+             regexp = /[0-9]{10}/ 
+             return !(regexp.test(field.value)) } 
+         if (key == 46) { 
+             if (field.value == "") return false 
+             regexp = /^[0-9]+$/ 
+             return regexp.test(field.value) 
+         }
+         return false
+     }
+
+     jQuery(".btnDayReport").live("click", function () {
+         var Date = $(this).attr('rel');
+         jQuery("#SendConfirmation").dialog({
+             resizable: false,
+             height: 190,
+             modal: true,
+             buttons: {
+                 "Send": function () {
+                     jQuery.ajax({
+                         url: "@Url.Action("SenMail","Task")",
+                         data: {
+                             "Date": Date
+                         },
+                         type: "POST",
+                         success: function (data) {
+                             if (data.Date === "True")
+                             {
+                                 jQuery("#DialogMailSend").dialog();
+                             }
+                             jQuery("#listTask").jqGrid('setGridParam', { url: "/Task/GetTasks", datatype: "json", page: 1 }).trigger("reloadGrid");
+                         },
+                         error: function () {
+                             jQuery("#DialogError").dialog();
+                         }
+                     });
+                     jQuery(this).dialog("close");
+                 },
+                 Cancel: function () {
+                     jQuery(this).dialog("close");
+                 }
+             }
+         });
+     });
+
+</script>
+
+
+
+
+
+ 

@@ -1,0 +1,106 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<link href="~/Content/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+<link href="~/Content/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.8.24.min.js"></script>
+
+<h2>Daily Report</h2>
+
+<table>
+    @if (User.IsInRole("Administrator"))
+    { 
+    <tr>
+        <td>User </td>
+        <td colspan="3">@Html.DropDownList("listUsers", ViewData["listUsers"] as SelectList)</td>
+    </tr>
+    }
+    <tr>
+        <td>Initial Date</td>
+        <td>@Html.TextBox("dtmInitDate")</td>
+        <td>End Date</td>
+        <td>@Html.TextBox("dtmEndDate")</td>
+    </tr>
+    <tr >
+        <td colspan="4"><button id="btnReport">Report</button></td>
+    </tr>
+</table>
+
+<div id ="DailyDiv">
+</div>
+
+<div id = "DialogError" title="Error!" hidden = "hidden">
+    <span>
+        Error when get dates! 
+    </span>
+</div>
+
+<div id = "DialogNotDates" title = "Alert!" hidden = "hidden">
+    <span>
+        The search performed no records!
+    </span>
+</div>
+
+<div id = "DialogValidation" title = "Validation" hidden = "hidden">
+    <span>
+        Select  Initial Date or End Date!
+    </span>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+
+        $("#dtmInitDate").datepicker(
+        {
+            changeMonth: true,
+            numberOfMonths: 1,
+            onClose: function (selectedDate) {
+                $("#dtmEndDate").datepicker("option", "minDate", selectedDate);
+            }
+        });
+
+        $("#dtmEndDate").datepicker(
+        {
+            changeMonth: true,
+            numberOfMonths: 1,
+            onClose: function (selectedDate) {
+                $("#dtmInitDate").datepicker("option", "maxDate", selectedDate);
+            }
+        });
+
+        jQuery("#btnReport").click(function () {
+            
+            var idUser = jQuery("#listUsers").val();
+            var initDate = jQuery("#dtmInitDate").val();
+            var endDate = jQuery("#dtmEndDate").val();
+            var dialyDiv = jQuery("#DailyDiv");
+            if (initDate != "" || endDate != "") {
+                jQuery.ajax({
+                    url: "@Url.Action("GetReport", "Report")",
+                    data: {
+                        "InitiaDate": initDate,
+                        "EndDate": endDate,
+                        "IdUser": idUser
+                    },
+                    type: "GET",
+                    success: function (data) {
+                        if (data == "" || data == null) {
+                            jQuery("#DialogNotDates").dialog();
+                        }
+                        dialyDiv.html("");
+                        dialyDiv.html(data);
+                    },
+                    error: function () {
+                        jQuery("#DialogError").dialog();
+                    }
+                });
+            }
+            else {
+                jQuery("#DialogValidation").dialog();
+            }
+        });
+    });
+
+</script>
+

@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "Index";
+    
+}
+
+<link href="~/Content/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+<link href="~/Content/jquery-ui.css" rel="stylesheet" />
+<link href="~/Content/ui.jqgrid.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/grid.locale-en.js"></script>
+<script src="~/Scripts/jquery.jqGrid.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.8.24.min.js"></script>
+
+<h2>List of Projects</h2>
+<br /><br />
+
+
+<table id="listProject"></table>
+<div id="pager2"></div>
+<br />
+<button id="btnAddProject">Add</button>
+
+<script type="text/javascript">
+
+    var grid = $("#listProject");
+
+    jQuery("#listProject").jqGrid({
+        url: "/Project/GetProjects",
+        datatype: "json",
+        mtype: 'GET',
+        colNames: ['ID PROJECT', 'NAME', 'DESCRIPTION', 'REMOVED' , ''],
+        colModel: [
+            { name: 'IdProject', index: 'IdProject', editable: true, sorttype: "text" },
+            { name: 'Name', index: 'Name', editable: true, sorttype: "text", editoptions: { maxLength: "50" }, editrules: {required : true}},
+            { name: 'Description', index: 'Description', editable: true, edittype: "textarea", editoptions: { rows: "12", cols: "48", maxLength: "500" }, editrules: { required: true } },
+            { name: 'Removed', index: 'Removed', editable: true, sorttype: "text" },
+            {
+                name: 'myac', width: 80, fixed: true, sortable: false, resize: false, formatter: 'actions', formatoptions:
+                    {
+                        keys: true,
+                        delOptions: {
+                            url: "/Project/DeleteProject",
+                            beforeShowForm: function (form) {
+
+                                var dlgDiv = $("#delmod" + grid[0].id);
+                                var parentDiv = dlgDiv.parent();
+                                var dlgWidth = dlgDiv.width();
+                                var parentWidth = parentDiv.width();
+                                var dlgHeight = dlgDiv.height();
+                                var parentHeight = parentDiv.height();
+                                var position = dlgWidth + parentWidth
+
+                                dlgDiv[0].style.left = Math.round((position) / 2) + "px";
+                            }
+                        }
+                    }
+              },
+
+        ],
+        formatter: 'actions',
+        formatoptions: {
+            keys: true,
+            editformbutton: true,
+        },
+        loadonce: true,
+        rowNum: 20,
+        rowList: [10, 20, 30, 40, 50],
+        pager: '#pager2',
+        sortname: 'IdProject',
+        viewrecords: true,
+        height: 'auto',
+        width: '1300',
+        recreateForm: true,
+        top: 5,
+        sortorder: "desc",
+        editurl: "/Project/EditProject",
+        caption: "Projects",
+    });
+
+    jQuery("#listProject").hideCol("IdProject");
+    jQuery("#listProject").hideCol("Removed");
+    jQuery("#listProject").jqGrid('navGrid', '#pager2', { edit: false, add: false, del: false, rel: true }, {}, {}, { url: "/Project/Delete" });
+
+    jQuery("#btnAddProject").click(function () {
+        jQuery("#listProject").jqGrid('editGridRow', "new", {
+            height: 380, width: 400, reloadAfterSubmit: false,
+            beforeShowForm: function (form) {
+
+                var dlgDiv = $("#editmod" + grid[0].id);
+                var parentDiv = dlgDiv.parent();
+                var dlgWidth = dlgDiv.width();
+                var parentWidth = parentDiv.width();
+                var dlgHeight = dlgDiv.height();
+                var parentHeight = parentDiv.height();
+
+                dlgDiv[0].style.left = Math.round((parentWidth) / 2) + "px";
+
+            },
+            beforeSubmit: function (postdata, formid) {
+                var Name = jQuery("#Name").val();
+                var isValid = "";
+                jQuery.ajax({
+                    url: "@Url.Action("ValidationName","Project")",
+                    async: false,
+                    data: {
+                        "Name": Name
+                    },
+                    type: "Get",
+                    success: function (data) {
+                        if (data === "NotValid") {
+                            isValid = "Not";
+                        }
+                        else {
+                            isValid = "";
+                        }
+                    }
+                });
+                if (isValid != "Not") {
+                     return [true, ''];
+                }
+                else {
+                    return [false, 'The project name already exists please try another'];
+                }
+            },
+            afterSubmit: function (response) {
+
+                var myInfo = '<div class="ui-state-highlight ui-corner-all">' +
+                             '<span class="ui-icon ui-icon-info" ' +
+                                 'style="float: left; margin-right: .3em;"></span>' +
+                             'New Task added successfully!'
+                             '</div>',
+                $infoTr = $("#TblGrid_" + $.jgrid.jqID(this.id) + ">tbody>tr.tinfo"),
+                $infoTd = $infoTr.children("td.topinfo");
+                $infoTd.html(myInfo);
+                $infoTr.show();
+                setTimeout(function () {
+                $infoTr.slideUp("slow");
+                $("#listProject").jqGrid('setGridParam', { url: "/Project/GetProjects", datatype: "json", page: 1 }).trigger("reloadGrid");
+                }, 4000);
+            return [true, "", ""];
+        }
+
+        });
+    });
+
+</script>
+
+
+
+
+
+

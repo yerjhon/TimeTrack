@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "UserAndTask";
+}
+<link href="~/Content/jquery-ui-1.8.17.custom.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.7.1.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.8.24.min.js"></script>
+
+<h2>USERS AND PROJECTS</h2>
+
+<table>
+    <tr>
+        <td>
+            @Html.Label("Users")
+        </td>
+        <td>
+            @Html.DropDownList("listUsers", ViewData["listUsers"] as SelectList, new { style="width: 500px;"})
+        </td>
+    </tr>
+</table>
+
+<div id="DailyDiv"> 
+</div>
+
+<div id = "DialogNotDates" title = "Alert!" hidden = "hidden">
+    <span>
+        The search performed no records!
+    </span>
+</div>
+
+<div id = "DialogError" title="Error!" hidden = "hidden">
+    <span>
+        Error when get dates! 
+    </span>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+
+        jQuery("#listUsers").change(function () {
+            var idUser = jQuery("#listUsers").val();
+            var dialyDiv = jQuery("#DailyDiv");
+            jQuery.ajax({
+                url: "@Url.Action("GetProjectForUser","Task")",
+                data: {
+                    "IdUser": idUser
+                },
+                cache : false,
+                type: "GET",
+                success: function (data) {
+                    if (data == "" || data == null) {
+                        jQuery("#DialogNotDates").dialog();
+                    }
+                    dialyDiv.html("");
+                    dialyDiv.html(data);
+                    jQuery(".chsenProject").chosen();
+                },
+                error: function () {
+                    jQuery("#DialogError").dialog();
+                }
+            });
+        });
+
+    });
+</script>

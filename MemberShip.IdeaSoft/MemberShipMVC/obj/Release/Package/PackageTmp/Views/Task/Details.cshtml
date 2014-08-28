@@ -1,0 +1,57 @@
+﻿@model MemberShipMVC.Models.Task
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<fieldset>
+    <legend>Task</legend>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.IdTask)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.IdTask)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.IdTicket)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.IdTicket)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Date)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Date)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Detail)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Detail)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Hours)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Hours)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.Project.Name)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.Project.Name)
+    </div>
+</fieldset>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { /* id=Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

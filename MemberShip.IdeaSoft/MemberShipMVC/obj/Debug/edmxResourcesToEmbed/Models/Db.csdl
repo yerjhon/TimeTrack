@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="MemberMVCModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityContainer Name="MemberMVCEntities" p1:LazyLoadingEnabled="true">
+    <EntitySet Name="Applications" EntityType="MemberMVCModel.Application" />
+    <EntitySet Name="Memberships" EntityType="MemberMVCModel.Membership" />
+    <EntitySet Name="Profiles" EntityType="MemberMVCModel.Profile" />
+    <EntitySet Name="Projects" EntityType="MemberMVCModel.Project" />
+    <EntitySet Name="ProjectUsers" EntityType="MemberMVCModel.ProjectUser" />
+    <EntitySet Name="Roles" EntityType="MemberMVCModel.Role" />
+    <EntitySet Name="sysdiagrams" EntityType="MemberMVCModel.sysdiagram" />
+    <EntitySet Name="Tasks" EntityType="MemberMVCModel.Task" />
+    <EntitySet Name="Users" EntityType="MemberMVCModel.User" />
+    <AssociationSet Name="MembershipApplication" Association="MemberMVCModel.MembershipApplication">
+      <End Role="Applications" EntitySet="Applications" />
+      <End Role="Memberships" EntitySet="Memberships" />
+    </AssociationSet>
+    <AssociationSet Name="RoleApplication" Association="MemberMVCModel.RoleApplication">
+      <End Role="Applications" EntitySet="Applications" />
+      <End Role="Roles" EntitySet="Roles" />
+    </AssociationSet>
+    <AssociationSet Name="UserApplication" Association="MemberMVCModel.UserApplication">
+      <End Role="Applications" EntitySet="Applications" />
+      <End Role="Users" EntitySet="Users" />
+    </AssociationSet>
+    <AssociationSet Name="MembershipUser" Association="MemberMVCModel.MembershipUser">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="Memberships" EntitySet="Memberships" />
+    </AssociationSet>
+    <AssociationSet Name="UserProfile" Association="MemberMVCModel.UserProfile">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="Profiles" EntitySet="Profiles" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProjectUser_Project" Association="MemberMVCModel.FK_ProjectUser_Project">
+      <End Role="Project" EntitySet="Projects" />
+      <End Role="ProjectUser" EntitySet="ProjectUsers" />
+    </AssociationSet>
+    <AssociationSet Name="FK_ProjectUser_Users" Association="MemberMVCModel.FK_ProjectUser_Users">
+      <End Role="Users" EntitySet="Users" />
+      <End Role="ProjectUser" EntitySet="ProjectUsers" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Task_ProjectUser" Association="MemberMVCModel.FK_Task_ProjectUser">
+      <End Role="ProjectUser" EntitySet="ProjectUsers" />
+      <End Role="Task" EntitySet="Tasks" />
+    </AssociationSet>
+    <AssociationSet Name="UsersInRoles" Association="MemberMVCModel.UsersInRoles">
+      <End Role="Roles" EntitySet="Roles" />
+      <End Role="Users" EntitySet="Users" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="Application">
+    <Key>
+      <PropertyRef Name="ApplicationId" />
+    </Key>
+    <Property Name="ApplicationName" Type="String" Nullable="false" MaxLength="235" Unicode="true" FixedLength="false" />
+    <Property Name="ApplicationId" Type="Guid" Nullable="false" />
+    <Property Name="Description" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+    <NavigationProperty Name="Memberships" Relationship="MemberMVCModel.MembershipApplication" FromRole="Applications" ToRole="Memberships" />
+    <NavigationProperty Name="Roles" Relationship="MemberMVCModel.RoleApplication" FromRole="Applications" ToRole="Roles" />
+    <NavigationProperty Name="Users" Relationship="MemberMVCModel.UserApplication" FromRole="Applications" ToRole="Users" />
+  </EntityType>
+  <EntityType Name="Membership">
+    <Key>
+      <PropertyRef Name="UserId" />
+    </Key>
+    <Property Name="ApplicationId" Type="Guid" Nullable="false" />
+    <Property Name="UserId" Type="Guid" Nullable="false" />
+    <Property Name="Password" Type="String" Nullable="false" MaxLength="128" Unicode="true" FixedLength="false" />
+    <Property Name="PasswordFormat" Type="Int32" Nullable="false" />
+    <Property Name="PasswordSalt" Type="String" Nullable="false" MaxLength="128" Unicode="true" FixedLength="false" />
+    <Property Name="Email" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+    <Property Name="PasswordQuestion" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+    <Property Name="PasswordAnswer" Type="String" MaxLength="128" Unicode="true" FixedLength="false" />
+    <Property Name="IsApproved" Type="Boolean" Nullable="false" />
+    <Property Name="IsLockedOut" Type="Boolean" Nullable="false" />
+    <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="LastLoginDate" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="LastPasswordChangedDate" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="LastLockoutDate" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="FailedPasswordAttemptCount" Type="Int32" Nullable="false" />
+    <Property Name="FailedPasswordAttemptWindowStart" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="FailedPasswordAnswerAttemptCount" Type="Int32" Nullable="false" />
+    <Property Name="FailedPasswordAnswerAttemptWindowsStart" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="Comment" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+    <NavigationProperty Name="Application" Relationship="MemberMVCModel.MembershipApplication" FromRole="Memberships" ToRole="Applications" />
+    <NavigationProperty Name="User" Relationship="MemberMVCModel.MembershipUser" FromRole="Memberships" ToRole="Users" />
+  </EntityType>
+  <EntityType Name="Profile">
+    <Key>
+      <PropertyRef Name="UserId" />
+    </Key>
+    <Property Name="UserId" Type="Guid" Nullable="false" />
+    <Property Name="PropertyNames" Type="String" Nullable="false" MaxLength="4000" Unicode="true" FixedLength="false" />
+    <Property Name="PropertyValueStrings" Type="String" Nullable="false" MaxLength="4000" Unicode="true" FixedLength="false" />
+    <Property Name="PropertyValueBinary" Type="Binary" Nullable="false" MaxLength="Max" FixedLength="false" />
+    <Property Name="LastUpdatedDate" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="User" Relationship="MemberMVCModel.UserProfile" FromRole="Profiles" ToRole="Users" />
+  </EntityType>
+  <EntityType Name="Project">
+    <Key>
+      <PropertyRef Name="IdProject" />
+    </Key>
+    <Property Name="IdProject" Type="Guid" Nullable="false" />
+    <Property Name="Name" Type="String" Nullable="false" MaxLength="50" Unicode="false" FixedLength="false" />
+    <Property Name="Description" Type="String" Nullable="false" MaxLength="500" Unicode="true" FixedLength="false" />
+    <NavigationProperty Name="ProjectUsers" Relationship="MemberMVCModel.FK_ProjectUser_Project" FromRole="Project" ToRole="ProjectUser" />
+    <Property Type="Boolean" Name="Removed" Nullable="false" />
+  </EntityType>
+  <EntityType Name="ProjectUser">
+    <Key>
+      <PropertyRef Name="IdProjectUser" />
+    </Key>
+    <Property Name="IdUser" Type="Guid" Nullable="false" />
+    <Property Name="IdProject" Type="Guid" Nullable="false" />
+    <Property Name="IdProjectUser" Type="Guid" Nullable="false" />
+    <NavigationProperty Name="Project" Relationship="MemberMVCModel.FK_ProjectUser_Project" FromRole="ProjectUser" ToRole="Project" />
+    <NavigationProperty Name="User" Relationship="MemberMVCModel.FK_ProjectUser_Users" FromRole="ProjectUser" ToRole="Users" />
+    <NavigationProperty Name="Tasks" Relationship="MemberMVCModel.FK_Task_ProjectUser" FromRole="ProjectUser" ToRole="Task" />
+    <Property Type="Boolean" Name="Removed" />
+  </EntityType>
+  <EntityType Name="Role">
+    <Key>
+      <PropertyRef Name="RoleId" />
+    </Key>
+    <Property Name="ApplicationId" Type="Guid" Nullable="false" />
+    <Property Name="RoleId" Type="Guid" Nullable="false" />
+    <Property Name="RoleName" Type="String" Nullable="false" MaxLength="256" Unicode="true" FixedLength="false" />
+    <Property Name="Description" Type="String" MaxLength="256" Unicode="true" FixedLength="false" />
+    <NavigationProperty Name="Application" Relationship="MemberMVCModel.RoleApplication" FromRole="Roles" ToRole="Applications" />
+    <NavigationProperty Name="Users" Relationship="MemberMVCModel.UsersInRoles" FromRole="Roles" ToRole="Users" />
+  </EntityType>
+  <EntityType Name="sysdiagram">
+    <Key>
+      <PropertyRef Name="diagram_id" />
+    </Key>
+    <Property Name="name" Type="String" Nullable="false" MaxLength="128" Unicode="true" FixedLength="false" />
+    <Property Name="principal_id" Type="Int32" Nullable="false" />
+    <Property Name="diagram_id" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+    <Property Name="version" Type="Int32" />
+    <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+  </EntityType>
+  <EntityType Name="Task">
+    <Key>
+      <PropertyRef Name="IdTask" />
+    </Key>
+    <Property Name="IdTask" Type="Guid" Nullable="false" />
+    <Property Name="IdTicket" Type="String" MaxLength="50" Unicode="false" FixedLength="false" />
+    <Property Name="Date" Type="DateTime" Nullable="false" Precision="3" />
+    <Property Name="Detail" Type="String" Nullable="false" MaxLength="500" Unicode="true" FixedLength="false" />
+    <Property Name="Hours" Type="Decimal" Nullable="false" Precision="18" Scale="2" />
+    <Property Name="IdProjectUser" Type="Guid" Nullable="false" />
+    <NavigationProperty Name="ProjectUser" Relationship="MemberMVCModel.FK_Task_ProjectUser" FromRole="Task" ToRole="ProjectUser" />
+    <Property Type="Boolean" Name="Send" Nullable="false" />
+  </EntityType>
+  <EntityType Name="User">
+    <Key>
+      <PropertyRef Name="UserId" />
+    </Key>
+    <Property Name="ApplicationId" Type="Guid" Nullable="false" />
+    <Property Name="UserId" Type="Guid" Nullable="false" />
+    <Property Name="UserName" Type="String" Nullable="false" MaxLength="50" Unicode="true" FixedLength="false" />
+    <Property Name="IsAnonymous" Type="Boolean" Nullable="false" />
+    <Property Name="LastActivityDate" Type="DateTime" Nullable="false" Precision="3" />
+    <NavigationProperty Name="Application" Relationship="MemberMVCModel.UserApplication" FromRole="Users" ToRole="Applications" />
+    <NavigationProperty Name="Membership" Relationship="MemberMVCModel.MembershipUser" FromRole="Users" ToRole="Memberships" />
+    <NavigationProperty Name="Profile" Relationship="MemberMVCModel.UserProfile" FromRole="Users" ToRole="Profiles" />
+    <NavigationProperty Name="ProjectUsers" Relationship="MemberMVCModel.FK_ProjectUser_Users" FromRole="Users" ToRole="ProjectUser" />
+    <NavigationProperty Name="Roles" Relationship="MemberMVCModel.UsersInRoles" FromRole="Users" ToRole="Roles" />
+  </EntityType>
+  <Association Name="MembershipApplication">
+    <End Role="Applications" Type="MemberMVCModel.Application" Multiplicity="1" />
+    <End Role="Memberships" Type="MemberMVCModel.Membership" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Applications">
+        <PropertyRef Name="ApplicationId" />
+      </Principal>
+      <Dependent Role="Memberships">
+        <PropertyRef Name="ApplicationId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="RoleApplication">
+    <End Role="Applications" Type="MemberMVCModel.Application" Multiplicity="1" />
+    <End Role="Roles" Type="MemberMVCModel.Role" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Applications">
+        <PropertyRef Name="ApplicationId" />
+      </Principal>
+      <Dependent Role="Roles">
+        <PropertyRef Name="ApplicationId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="UserApplication">
+    <End Role="Applications" Type="MemberMVCModel.Application" Multiplicity="1" />
+    <End Role="Users" Type="MemberMVCModel.User" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Applications">
+        <PropertyRef Name="ApplicationId" />
+      </Principal>
+      <Dependent Role="Users">
+        <PropertyRef Name="ApplicationId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="MembershipUser">
+    <End Role="Users" Type="MemberMVCModel.User" Multiplicity="1" />
+    <End Role="Memberships" Type="MemberMVCModel.Membership" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="UserId" />
+      </Principal>
+      <Dependent Role="Memberships">
+        <PropertyRef Name="UserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="UserProfile">
+    <End Role="Users" Type="MemberMVCModel.User" Multiplicity="1" />
+    <End Role="Profiles" Type="MemberMVCModel.Profile" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="UserId" />
+      </Principal>
+      <Dependent Role="Profiles">
+        <PropertyRef Name="UserId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProjectUser_Project">
+    <End Role="Project" Type="MemberMVCModel.Project" Multiplicity="1" />
+    <End Role="ProjectUser" Type="MemberMVCModel.ProjectUser" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Project">
+        <PropertyRef Name="IdProject" />
+      </Principal>
+      <Dependent Role="ProjectUser">
+        <PropertyRef Name="IdProject" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ProjectUser_Users">
+    <End Role="Users" Type="MemberMVCModel.User" Multiplicity="1" />
+    <End Role="ProjectUser" Type="MemberMVCModel.ProjectUser" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Users">
+        <PropertyRef Name="UserId" />
+      </Principal>
+      <Dependent Role="ProjectUser">
+        <PropertyRef Name="IdUser" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Task_ProjectUser">
+    <End Role="ProjectUser" Type="MemberMVCModel.ProjectUser" Multiplicity="1" />
+    <End Role="Task" Type="MemberMVCModel.Task" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="ProjectUser">
+        <PropertyRef Name="IdProjectUser" />
+      </Principal>
+      <Dependent Role="Task">
+        <PropertyRef Name="IdProjectUser" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="UsersInRoles">
+    <End Role="Roles" Type="MemberMVCModel.Role" Multiplicity="*" />
+    <End Role="Users" Type="MemberMVCModel.User" Multiplicity="*" />
+  </Association>
+</Schema>

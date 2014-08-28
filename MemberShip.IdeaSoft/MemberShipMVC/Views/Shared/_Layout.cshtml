@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<style>
+    nav ul ul {
+	    display: none;
+	    position: absolute;
+    }
+	nav ul li:hover > ul {
+		display: block;
+	}
+    nav ul {
+	    background: #efefef; 
+	    background: linear-gradient(top, #efefef 0%, #bbbbbb 100%);  
+	    background: -moz-linear-gradient(top, #efefef 0%, #bbbbbb 100%); 
+	    background: -webkit-linear-gradient(top, #efefef 0%,#bbbbbb 100%); 
+	    box-shadow: 0px 0px 9px rgba(0,0,0,0.15);
+	    padding: 0 20px;
+	    border-radius: 10px;  
+	    list-style: none;
+	    position: relative;
+	    display: inline-table;
+    }
+	nav ul:after {
+		content: ""; clear: both; 
+	}
+    nav ul li a {
+		padding: 25px 40px;
+		color: #757575; text-decoration: none; 
+	}
+
+    nav ul ul ul {
+	position: absolute; left: 100%; top:0;
+    }
+ 
+</style>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>IDEASOFT</title>
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <meta name="viewport" content="width=device-width" />
+        @Styles.Render("~/Content/css")
+        @Scripts.Render("~/bundles/modernizr")
+    </head>
+    <body>
+        <header>
+            <div class="content-wrapper">
+                <div class="float-left">
+                </div>
+                <div>
+                    <section id="login">
+                        @Html.Partial("_LoginPartial")
+                    </section>
+                    <div style="">
+                        <nav style="text-align:left">
+                            <img src="~/Content/ideasoft-logo.png" style="width:100px; height:100px; margin: 0;"/>
+
+                            <ul id="menu" style="text-align:left">
+                                <li>@Html.ActionLink("Home", "Index", "Task")</li>
+                                 <li><a href="#">Profile</a>
+                                    <ul>
+                                         @if (User.IsInRole("Administrator"))
+                                            {
+                                                <li>@Html.ActionLink("Administration Users", "Index", "Dashboard", new { area = "SecurityGuard" }, null)</li>
+                                            }
+                                        
+                                          @if (User.Identity.IsAuthenticated)
+                                            {
+                                                <li>@Html.ActionLink("Change Password", "ChangePassword", "SGAccount")</li>
+                                            }
+                                         
+                                    </ul>
+                                </li>
+                                <li>@Html.ActionLink("Report", "Index", "Report")</li>
+                                @if (User.IsInRole("Administrator"))
+                                { 
+                                   <li>@Html.ActionLink("Assign Users","UserAndTask","Task")</li>
+                                   <li>@Html.ActionLink("Projects","Index","Project")</li>
+                                }
+                               
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div id="body">
+            @RenderSection("featured", required: false)
+            <section class="content-wrapper main-content clear-fix">
+                @RenderBody()
+            </section>
+        </div>
+        <footer>
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <p>&copy; @DateTime.Now.Year - IDEASOFT </p>
+                </div>
+            </div>
+        </footer>
+        @*@Scripts.Render("~/bundles/jquery")*@
+        @RenderSection("scripts", required: false)
+    </body>
+</html>
